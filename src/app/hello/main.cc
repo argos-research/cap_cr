@@ -165,58 +165,72 @@ void Component::construct(Genode::Env &env)
 
 	const char* elf_name = "hello_child";
 
+	raw("cap_cr|STAGE|start|");
+
 	log("-------------------- Creating hello_child --------------------");
 //	enter_kdebug("Before pd_connection");
 	log("-------------------- Creating pd_connection --------------------");
+	raw("cap_cr|STAGE|Pd_connection|");
 	Genode::Pd_connection  pd(env, elf_name);
 	log("-------------------- Pd_connection created --------------------");
 //	enter_kdebug("After pd_connection");
 
 	log("-------------------- Creating cpu_connection --------------------");
+	raw("cap_cr|STAGE|Cpu_connection|");
 	Genode::Cpu_connection cpu;
 	log("-------------------- Cpu_connection created --------------------");
 
 	// transfer some of our own ram quota to the new child
 	enum { CHILD_QUOTA = 1*1024*1024 };
 	log("-------------------- Creating ram_connection --------------------");
+	raw("cap_cr|STAGE|Ram_connection|");
 	Genode::Ram_connection ram;
 	log("-------------------- Ram_connection created --------------------");
 /*	ram.ref_account(Genode::env()->ram_session_cap());
 	Genode::env()->ram_session()->transfer_quota(ram.cap(), CHILD_QUOTA);
 */
 	log("-------------------- Referencing RAM account --------------------");
+	raw("cap_cr|STAGE|ref_account|");
 	ram.ref_account(env.ram_session_cap());
 	log("-------------------- RAM account referenced --------------------");
 	log("-------------------- Transfering RAM quota --------------------");
+	raw("cap_cr|STAGE|transfer_quota|");
 	env.ram().transfer_quota(ram.cap(), CHILD_QUOTA);
 	log("-------------------- Ram quota transferred --------------------");
 
 	log("-------------------- Creating Initial_thread --------------------");
+	raw("cap_cr|STAGE|Initial_thread|");
 	Genode::Child::Initial_thread _initial_thread(cpu, pd, "hello_child thread");
 	log("-------------------- Initial_thread created --------------------");
 
 	log("-------------------- Creating rom_connection --------------------");
+	raw("cap_cr|STAGE|Rom_connection|");
 	Genode::Rom_connection    _elf(elf_name);
 	log("-------------------- Rom_connection created --------------------");
 
 	log("-------------------- Creating Region_map_client --------------------");
+	raw("cap_cr|STAGE|Region_map_client|");
 	Genode::Region_map_client _address_space( pd.address_space() );
 	log("-------------------- Region_map_client created --------------------");
 
 	enum { STACK_SIZE = 8*1024 };
 	log("-------------------- Creating Cap_connection --------------------");
+	raw("cap_cr|STAGE|Cap_connection|");
 	Cap_connection cap;
 	log("-------------------- Cap_connection created --------------------");
 
 	log("-------------------- Creating Rpc_entrypoint --------------------");
+	raw("cap_cr|STAGE|Rpc_entrypoint|");
 	Rpc_entrypoint ep(&cap, STACK_SIZE, "hello_child ep");
 	log("-------------------- Rpc_entrypoint created --------------------");
 
 	log("-------------------- Creating Hello_child_policy --------------------");
+	raw("cap_cr|STAGE|Child_policy|");
 	Hello_child_policy my_child_policy;
 	log("-------------------- Hello_child_policy created --------------------");
 
 	log("-------------------- Creating Child my_child --------------------");
+	raw("cap_cr|STAGE|Child|");
 //	enter_kdebug("Before Child");
 	Child my_child(
 					_elf.dataspace(), // valid dataspace that contains elf. loads and executes it.
@@ -230,7 +244,9 @@ void Component::construct(Genode::Env &env)
 	log("-------------------- Child my_child created --------------------");
 
 	log("-------------------- Waiting 3 seconds --------------------");
+//	raw("cap_cr|STAGE|sleep_start|");
 	timer.msleep(3000);
+	raw("cap_cr|STAGE|sleep_end");
 	log("-------------------- Done! --------------------");
 
 #if 0
